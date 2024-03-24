@@ -1,4 +1,5 @@
 Решением является небольшой модуль, который будет заниматься фильтрацией набора перелётов согласно различным правилам.
 Применяется паттерн стратегия.
 
-Задание представлено в в файле test-instructions
+Задание представлено в в файле test-instructions, по пути AirTravelProcessingSystem\src\main\java\tusk
+Решение AirTravelProcessingSystem\src\main\java\org\answer , реализация стратегии answer\filter\strategy

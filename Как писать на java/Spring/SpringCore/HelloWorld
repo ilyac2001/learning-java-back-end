@@ -1,2 +1,4 @@
 Простой SpringCore проект
-изучение Applicatio Context & Dependency Injection при .xml и @Аннотаций
+Сборка Maven
+изучение Applicatio Context & Dependency Injection
+Способы создания конфигурации через .xml, .xml + Java @Аннотации и только Java @Аннотации

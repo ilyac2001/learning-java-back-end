@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans  xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:player.properties"/>
+
+    <bean id="musicBean"
+          class="org.example.DependencyInversion_InversionOfControl.Classic">
+    </bean>
+    <bean id="musicBean1"
+          class="org.example.DependencyInversion_InversionOfControl.Rock">
+    </bean>
+    <bean id="musicBean2"
+          class="org.example.DependencyInversion_InversionOfControl.Silence"
+          scope="prototype"
+          init-method="DoMyInit"
+          destroy-method="DoMyDestroy"
+          factory-method="Factory">
+    </bean>
+
+    <bean id="playerBean"
+          class="org.example.DependencyInversion_InversionOfControl.Player">
+        <property name="music">
+            <list>
+                <ref bean="musicBean2"/>
+                <ref bean="musicBean1"/>
+                <ref bean="musicBean"/>
+            </list>
+        </property>
+        <property name="volume" value="${Player.value}"/>
+    </bean>
+</beans>

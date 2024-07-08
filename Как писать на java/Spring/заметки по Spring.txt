@@ -1,0 +1,174 @@
+----------Applicatio Context & Dependency Injection----------
+Внедрение зависимостей. Зависимость - связи между объектами (один зависит от другого).
+Задача создать объект класса единожды (паттерн Singleton) и внедрить ссылку на объект (созданее объектов вручную, как поле класса) во все классы (встроить в иерархию)
+	Фрэймворк Spring - готовое решение (выполняет задачи описаные выше), самому писать - сложно, запутанно, дополнительный код.
+зависимости Spring-core и Spring-beans (отвечает за создание объектов) и Spring-context (доступ к классам Spring например ClassPathXmlApplicationContext)
+
+***Applicatio Context***
+resurces (помеченная папка) - файлы доступны другим java классам (храница конфигурация Springа .xml .properties)
+	фреймворк читает конфигурацию и кладёт их в свой контекст
+	данные файлы относятся к классу (хранятся в переменной) classpath
+	*в .xml описываются из каких классов надо создать bean
+	*в .properties хранятся свойства в формате ключ-значение, к которым можно обращаться через ${}
+		для обращения из .xml нужно в .xml написать <context:property-placeholder location="classpath:FileName.properties"/>
+
+bean и объект - схожие вещи. объект, созданный Springом называется бином
+	в конфигурации Springа описывается bean какого оъекта требуется создать
+    <bean id="testBean"
+          class="org.example.TestBean">
+        <constructor-arg value="SomeName"/>
+    </bean>
+	*я создаю контекст, указывая конфигурацию (которое тоже создаю)
+ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+	*Spring читает .xml и помещает все beans в ApplicationContext
+	*после я могу достать bean (объект созданный Springом в перделах контекста)
+TestBean tb = context.getBean("testBean", TestBean.class); //передаётся id (описано в конфигурации) и класс
+System.out.println(tb.getName());
+context.close(); //обязательное действие
+p.s.
+конфигурацию Springа можно описывать через XML или аннотации Java
+
+***Inversion of Control***
+инверсия управления
+проблемы:
+	сильная зависимость - решение создать интерфейс или абстрктный класс
+	слабая зависимость, когда в калссе определяется экземпляр (через интерфейс) - решение создать метод, через который (получается из вне) можно передавать аргумент и определять экземпляр IoC
+(Dependency Inversion (Принцип инверсии зависимостей).)
+	проблема создания объекта извне для внедрения его (зависимости) в класс - Spring решает проблему Dependency Injection:
+
+IMusic music = music_context.getBean("musicBean", IMusic.class);//экзепляр интерфейса теперь изменяется не здесь, то есть конструкции new...
+//можно в файле конфигурации
+    <bean id="musicBean"
+          class="org.example.DependencyInversion_InversionOfControl.Classic"> //изменение экземпляра!
+    </bean>
+//остаётся  решить следующую проблему, внедрением зависимости
+Player p = new Player(music);
+
+***Dependency Injection***
+КОНСТРУКТОР И SETTER
+    <bean id="musicBean"
+          class="org.example.DependencyInversion_InversionOfControl.Silence">
+    </bean>
+<!--Dependency Injection-->
+    <bean id="playerBean"
+          class="org.example.DependencyInversion_InversionOfControl.Player">
+        <constructor-arg ref="musicBean"/>
+    </bean>
+//IMusic music = music_context.getBean("musicBean", IMusic.class); //этот код уже не трубется
+//Player p = new Player(music);					   //этот код уже не трубется
+Player p = music_context.getBean("playerBean", Player.class); //зависимость определена в конфигурации
+
+аналогично конструктору <constructor-arg, но синтаксис другой:
+<property name="music" ref="musicBean"/>
+//заменяет код //setMusic(IMusic m){this.music = m};
+	название очень важно, Spring ищет Setter, а именно set...Propety(),
+	убирает set, слова разделяются маленько буквой, 
+	то есть зависимость name="music" - Spring ищет метод setMusic()
+	зависимость name="name" - ищет setName();
+НО так или иначе class=... вызывает конструктор при создании бина!
+	если конструктор с параметрами, то обязательно требуется в конфигурации указать <constructor-arg.../>
+
+ССЫЛКИ И ПРОСТЫЕ ЗНАЧЕНИЯ, ЗНАЧЕНИЯ ИЗ ВНЕШНЕГО ФАЙЛА
+-типы данных
+	ссылочные: ref="название бина, его id"
+	простые:   value="значение", value=${класс.поле} также такие значения можно брать из файла .properties
+
+в .properties хранятся свойства в формате ключ-значение, к которым можно обращаться через ${}
+	для обращения из .xml нужно в .xml написать <context:property-placeholder location="classpath:FileName.properties"/>
+.player.properties
+	Player.value=99
+.xml
+    <context:property-placeholder location="classpath:player.properties"/>
+        <property name="music" ref="musicBean"/>
+        <property name="volume" value="${Player.value}"/>
+
+---Жизненный цикл бина---
+*Scope, область видимости бинов*
+конфигурация scope задаёт то, как Spring будет создавать бины
+scope:
+	Singleton - по умолчанию, то есть GetBean() возвращал ссылку на один и тот же объект
+	Prototype - GetBean() создаёт новый объект (в пределах одного контекста из определения)
+	далее в MVC: request, session, global-session
+
+*специальные методы бинов*
+жизаненный цикл:
+запуск приложения Spring -> запуск Spring контейнера (тот самый контекст) -> создаётся объект бина (конструктор) -> в бин внедряются зависимости -> 
+	-> вызывается init-method ->
+	-> бин готов к использованиб ->
+	-> вызывается указанный destroy-method (не для scope="prorotype") -> остановка приложения Spring
+init-method - запуск указанного метода в момент инициализации бина, ресурсов, БД, обращение к внешним файлам
+destroy-method- запуск указанного метода в момент в ходе уничтожения, очищение ресурсов, закрытие потоков и доступа к БД
+	не вызывается для scope="prorotype"
+особенности:
+	ЛЮБОЙ модификатор доступа И у КОНСТРУКТОРА в том числе
+	эти методы не должны принимать аргументы, ПАДАЕТ во время выполнения, непроверяемое исключение
+	возв знач любое, всё равно обработать нелья
+	название любое (на удивление для setterов это вадно, см. выше)
+	destroy не вызывается для scope="prorotype"
+factory-method - запуск указанного метода в момент в момент создания бина
+особенности:
+	метод должен иметь реализацию фабрики, иначе выбрасывается не проверяемое исключение
+	вызывается перед конструкором
+	ДАЖЕ если scope="singleton", а в конструкции фабрики new Class(), то всё равно объект будет ОДИН!
+---Аннотации---
+Альтернатива описанию .xml
+например @Component перед классом заменяет .xml
+    <bean id="someClass"
+          class=".SomeClass">
+    </bean>
+
+тогда в конфигурации Spring нужно указать сканирование компонентов 
+
+@Component - пометка для каласса на создание бина
+	@Component("id"), если по умолчанию, то название класса с маленькой буквы
+@Autowired - Spring автоматически внедряет зависимости
+	пометка для полей, методов(пофиг,что не setter, по аннотации spring всё поймёт) и конструкторов, ДАЖЕ private
+	сканирует и ищет подходящий бин на место класса или класса реализ. интерфейс
+	если не находит выбрасывает непроверяемое исключение
+	если неоднозначность, даже нескомпилится
+		- решение это аннотация @Qualifier
+@Qualifier - указываем id того бина, что хотим внедрить
+	аннотация указывается после @Autowired
+	@Qualifier("id_nameBean")
+	если уточнение в конструкторе, то аннотация указывается перед типом данных аргумента
+@Value - задать значение простому типу даннхы из файла .properties
+@Scope("prototype") - указывается перед описанием класса, как Component
+@PostConstract - init-method
+@PreDestroy - destroy-method
+	чтобы методы работали нужно добавить зависимости, т.к. данные аннотации были удалены из java11
+	<dependency>
+	    <groupId>javax.annotation</groupId>
+	    <artifactId>javax.annotation-api</artifactId>
+	    <version>1.3.2</version>
+	</dependency>
+
+*аналог .xml файлу*
+Java класс, который можно использовать, как аналог .xml должен иметь аннотации
+
+перед объявлением класса
+@Cofiguration - помечает класс, который должен быть испоьзован для конфигурации Spring
+	для каждого xml тэга етсь соответствующая аннотация
+@ComponentScan("pack") - какие классы требуется сканировать Spring
+@ProretySource("classpath:file_name.properties") - аналогично, только подтяивание .properties файла
+class ConfigurationSprint(){}
+
+для обращения к контексту
+AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConfigurationSprint.class);
+//вместо //ClassPathXmlApplicationContext music_context_annotations_xml = new ClassPathXmlApplicationContext("Context.xml");
+
+@Configuration
+@ComponentScan("org.example.Annotations")
+@PropertySource("classpath:player.properties")
+public class ConfigurationSprint_MusicContext {
+    @Bean
+	//@Scope("prototype") //по желанию, можно определить здесь
+    public Classic classic() { //classic - bean id
+        return new Classic();
+    }
+}
+	альтернатива создания бина, например вместо @Component - перед объявлением класса
+	id определяется аналогично
+что касается внедрения зависимостей таким образом, то потребуется в этом java файле создавать bean того класс, в который требуется внедрить зависимость, а не другим способом
+----------MVC----------
+
+----------БД----------

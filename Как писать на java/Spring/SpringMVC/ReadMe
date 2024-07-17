@@ -1,2 +1,2 @@
 HelloWorld проекты:
-Сборка maven, сервер Tomcat, зависимости SpringCore, SpringMvc, thymeLeaf, конфигурация при помощи аннотаций (без .xml).
+Сборка maven, сервер Tomcat, зависимости spring-core, spring-webmvc, thymeLeaf, hibernate.validator..., конфигурация при помощи аннотаций (без .xml).

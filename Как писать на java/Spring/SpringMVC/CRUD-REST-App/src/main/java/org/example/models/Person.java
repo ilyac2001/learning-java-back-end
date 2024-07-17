@@ -1,7 +1,17 @@
 package org.example.models;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 public class Person {
+    @Min(0)
     private int id;
+    @NotEmpty(message = "name not empty")
+    @Size(min = 2, max = 30, message = "size 2-30")
+    @Pattern(regexp = "^[a-zA-Z]+$", message = "the name must consist of letters of the Latin alphabet")
+    private String name;
 
     public Person(){}
 
@@ -25,6 +35,4 @@ public class Person {
     public void setName(String name) {
         this.name = name;
     }
-
-    private String name;
 }

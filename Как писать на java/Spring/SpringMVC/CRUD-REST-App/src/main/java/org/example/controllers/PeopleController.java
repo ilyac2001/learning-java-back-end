@@ -1,10 +1,12 @@
 package org.example.controllers;
 
+import jakarta.validation.Valid;
 import org.example.models.Person;
 import org.example.models.dao.PersonDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -37,7 +39,11 @@ public class PeopleController {
     }
 
     @PostMapping()
-    public String create(@ModelAttribute("person") Person person){
+    public String create(@ModelAttribute("person") @Valid Person person,
+                         BindingResult bindingResult){
+        if(bindingResult.hasErrors()){
+            return "create_person";
+        }
         dao.save(person);
         return "redirect:/people";
     }
@@ -49,7 +55,12 @@ public class PeopleController {
     }
 
     @PatchMapping("/{id}")
-    public String update(@ModelAttribute("person") Person person, @PathVariable("id") int id){
+    public String update(@ModelAttribute("person")  @Valid Person person,
+                         BindingResult bindingResult,
+                         @PathVariable("id") int id){
+        if(bindingResult.hasErrors()){
+            return "edit_person";
+        }
         dao.edit(id, person);
         return "redirect:/people/{id}";
     }

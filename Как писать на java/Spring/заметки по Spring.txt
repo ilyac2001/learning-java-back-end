@@ -277,7 +277,23 @@ return "redirect:/users";  // Перенаправление на /users -  @Get
 и тогда данные можем положить в модель model.addAttribute("ключ", "значение");
 досутуп через thymeleaf th:text, чтобы динамически отображать значение <p th:text="${ключ}"></p>
 
-
+***валидация форм***
+зависимость в pom.xml Hibernate-Validator Engine
+правила валидации логично описывать в MODEL (применяется к полям)
+	@NotEmpty(messege = "поле не должно быть пустым") //messege
+	@Email - проверяется email
+	@Pattern - Значение должно соответствовать указанному регулярному выражению
+	Min max.. их много смотри: https://alexkosarev.name/2018/07/30/bean-validation-api/
+и проверять в CONTROLLER
+	@Valid применяется к валидируемому параметру
+	если условия нарушаются, то появлется ошибка, которая помещается в отдельный объект
+		объект нужно передать в параметр
+		BindingResult br
+		!должен идти после того объекта, который валидируется
+    @PostMapping()
+    public String create(@ModelAttribute("person") @Valid Person person, BindingResult bindingResult){
+     if(bindingResult.hasErrors()){return;}
+	...
 ----------Протоколы, стандарты, архитектура----------
 *HTTP*
 на сервере работает Spring приложение

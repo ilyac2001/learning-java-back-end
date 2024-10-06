@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Client</string>
+    <string name="not_number">номер телефона должен быть числом</string>
+    <string name="is_empty">строки не должны быть пустыми</string>
+    <string name="test">nice</string>
+    <string name="format_number">например: "88001231212"</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="no_permission_GPS">вы не дали разрешение на использование GPS, вошли в систему, как гость</string>
+    <string name="no_GPS">что-то полшло не так, не удаётся получить данные GPS</string>
+    <string name="no_point">поставте выбирете точку на карте</string>
+
+</resources>
